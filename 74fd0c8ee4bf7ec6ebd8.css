@@ -1,0 +1,220 @@
+/* Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. */
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+}
+
+ul,
+ol,
+li {
+  margin: 0;
+  padding: 0;
+}
+
+.ms-welcome {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+}
+
+.ms-welcome__header {
+  min-height: 130px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #0078d4;
+  color: white;
+}
+
+.ms-welcome__header img {
+  width: 90px;
+  height: 90px;
+  margin-bottom: 10px;
+}
+
+.logo-placeholder {
+  width: 90px;
+  height: 90px;
+  margin-bottom: 10px;
+  font-size: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+}
+
+.ms-welcome__header h1 {
+  margin: 0;
+  font-weight: 700;
+  text-align: center;
+}
+
+.ms-welcome__main {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: nowrap;
+  flex: 1 1 0%;
+  padding: 20px;
+}
+
+.ms-welcome__main > h2 {
+  margin-bottom: 20px;
+  font-weight: 600;
+  color: #323130;
+}
+
+.feature-section {
+  margin-bottom: 20px;
+}
+
+.feature-section h3 {
+  margin-bottom: 10px;
+  color: #323130;
+  font-weight: 600;
+}
+
+.keywords-list {
+  background-color: #f3f2f1;
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 20px;
+  list-style: none;
+}
+
+.keywords-list li {
+  background-color: #e1dfdd;
+  border-radius: 12px;
+  padding: 4px 8px;
+  margin: 4px;
+  display: inline-block;
+  font-size: 12px;
+  font-family: monospace;
+  color: #323130;
+}
+
+.status-section {
+  background-color: #f3f2f1;
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.status-active {
+  color: #107c10;
+  font-weight: 600;
+}
+
+.status-inactive {
+  color: #d13438;
+  font-weight: 600;
+}
+
+.test-section {
+  background-color: #fff4ce;
+  border-radius: 4px;
+  padding: 15px;
+  border-left: 4px solid #ffb900;
+}
+
+.test-section h3 {
+  color: #8a6914;
+}
+
+.ms-Button {
+  display: inline-block;
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+  padding: 8px 16px;
+  border-radius: 2px;
+  border: 1px solid transparent;
+  font-size: 14px;
+  font-weight: 600;
+  min-width: 80px;
+  background-color: #f3f2f1;
+  color: #323130;
+  transition: background-color 0.15s ease;
+}
+
+.ms-Button:hover {
+  background-color: #edebe9;
+}
+
+.ms-Button--primary {
+  background-color: #0078d4;
+  color: white;
+}
+
+.ms-Button--primary:hover {
+  background-color: #106ebe;
+}
+
+.ms-Button-label {
+  display: inline-block;
+}
+
+.test-result-success {
+  color: #107c10;
+  font-weight: 600;
+  padding: 8px;
+  background-color: #dff6dd;
+  border-radius: 4px;
+  border-left: 4px solid #107c10;
+}
+
+.test-result-warning {
+  color: #8a6914;
+  font-weight: 600;
+  padding: 8px;
+  background-color: #fff4ce;
+  border-radius: 4px;
+  border-left: 4px solid #ffb900;
+}
+
+.test-result-error {
+  color: #d13438;
+  font-weight: 600;
+  padding: 8px;
+  background-color: #fde7e9;
+  border-radius: 4px;
+  border-left: 4px solid #d13438;
+}
+
+/* Font styles */
+.ms-font-su {
+  font-size: 42px;
+  font-weight: 100;
+}
+
+.ms-font-xl {
+  font-size: 21px;
+  font-weight: 100;
+}
+
+.ms-font-l {
+  font-size: 17px;
+  font-weight: 300;
+}
+
+.ms-font-m {
+  font-size: 14px;
+  font-weight: 400;
+}
+
+.ms-font-s {
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.ms-bgColor-neutralLighter {
+  background-color: #f3f2f1;
+}
