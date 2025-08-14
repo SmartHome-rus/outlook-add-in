@@ -12,8 +12,8 @@
   <DefaultLocale>en-US</DefaultLocale>
   <DisplayName DefaultValue="Sensitive Data Scanner"/>
   <Description DefaultValue="Scans emails for sensitive keywords and blocks sending when found"/>
-  <IconUrl DefaultValue="https://localhost:3000/assets/icon-32.png"/>
-  <HighResolutionIconUrl DefaultValue="https://localhost:3000/assets/icon-64.png"/>
+  <IconUrl DefaultValue="https://smarthome-rus.github.io/outlook-add-in/assets/icon-32.png"/>
+  <HighResolutionIconUrl DefaultValue="https://smarthome-rus.github.io/outlook-add-in/assets/icon-64.png"/>
   <SupportUrl DefaultValue="https://www.contoso.com/help"/>
   
   <!-- Hosts -->
@@ -32,7 +32,7 @@
   <FormSettings>
     <Form xsi:type="ItemRead">
       <DesktopSettings>
-        <SourceLocation DefaultValue="https://localhost:3000/taskpane.html"/>
+        <SourceLocation DefaultValue="https://smarthome-rus.github.io/outlook-add-in/taskpane.html"/>
         <RequestedHeight>250</RequestedHeight>
       </DesktopSettings>
     </Form>
@@ -106,15 +106,15 @@
       
       <Resources>
         <bt:Images>
-          <bt:Image id="Icon.16x16" DefaultValue="https://localhost:3000/assets/icon-16.png"/>
-          <bt:Image id="Icon.32x32" DefaultValue="https://localhost:3000/assets/icon-32.png"/>
-          <bt:Image id="Icon.80x80" DefaultValue="https://localhost:3000/assets/icon-80.png"/>
+          <bt:Image id="Icon.16x16" DefaultValue="https://smarthome-rus.github.io/outlook-add-in/assets/icon-16.png"/>
+          <bt:Image id="Icon.32x32" DefaultValue="https://smarthome-rus.github.io/outlook-add-in/assets/icon-32.png"/>
+          <bt:Image id="Icon.80x80" DefaultValue="https://smarthome-rus.github.io/outlook-add-in/assets/icon-80.png"/>
         </bt:Images>
         <bt:Urls>
-          <bt:Url id="Commands.Url" DefaultValue="https://localhost:3000/commands.html"/>
-          <bt:Url id="Taskpane.Url" DefaultValue="https://localhost:3000/taskpane.html"/>
-          <bt:Url id="WebViewRuntime.Url" DefaultValue="https://localhost:3000/commands.html"/>
-          <bt:Url id="JSRuntime.Url" DefaultValue="https://localhost:3000/commands.js"/>
+          <bt:Url id="Commands.Url" DefaultValue="https://smarthome-rus.github.io/outlook-add-in/commands.html"/>
+          <bt:Url id="Taskpane.Url" DefaultValue="https://smarthome-rus.github.io/outlook-add-in/taskpane.html"/>
+          <bt:Url id="WebViewRuntime.Url" DefaultValue="https://smarthome-rus.github.io/outlook-add-in/commands.html"/>
+          <bt:Url id="JSRuntime.Url" DefaultValue="https://smarthome-rus.github.io/outlook-add-in/commands.js"/>
         </bt:Urls>
         <bt:ShortStrings>
           <bt:String id="GroupLabel" DefaultValue="Sensitive Data Scanner"/>
@@ -130,3 +130,4 @@
   </VersionOverrides>
   
 </OfficeApp>
+
