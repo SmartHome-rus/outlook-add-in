@@ -1,1 +1,158 @@
-<!doctype html><html><head><meta charset="UTF-8"/><meta http-equiv="X-UA-Compatible" content="IE=Edge"/><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sensitive Data Scanner - Commands</title><script defer="defer" src="vendors.js"></script><script defer="defer" src="polyfill.js"></script><script defer="defer" src="commands.js"></script></head><body><div style="display:none"><h1>Sensitive Data Scanner - Event Handler</h1><p>This page hosts the event-based activation functions for the Sensitive Data Scanner add-in.</p><p>The functions defined here will be called automatically when users attempt to send emails or calendar invitations.</p></div><script>if(console.log("🚀 Commands page loaded at:",(new Date).toISOString()),console.log("🌐 Navigator online:",navigator.onLine),console.log("📍 Current URL:",window.location.href),"serviceWorker"in navigator){function registerServiceWorker(){const e="./sw.js";return console.log("📝 Attempting to register SW at:",e),console.log("📍 From GitHub Pages:",window.location.origin),navigator.serviceWorker.register(e,{scope:"./",updateViaCache:"none"}).then(e=>(console.log("✅ Service Worker registered successfully"),console.log("📦 Scope:",e.scope),console.log("📦 State:",e.active?.state),console.log("📦 Installing state:",e.installing?.state),console.log("📦 Waiting state:",e.waiting?.state),e.waiting&&(console.log("🔄 Activating waiting service worker"),e.waiting.postMessage({type:"SKIP_WAITING"})),e.installing&&e.installing.addEventListener("statechange",e=>{console.log("🔄 SW state changed to:",e.target.state)}),e)).catch(e=>{if(console.error("❌ Service Worker registration failed:",e),console.error("❌ Error type:",e.constructor.name),console.error("❌ Error message:",e.message),e.message.includes("SSL")||e.message.includes("certificate")){console.warn("⚠️ GitHub Pages SSL Certificate Issue Detected"),console.warn("⚠️ This should not happen with GitHub Pages - check network connection"),console.warn('⚠️ Use browser Developer Tools Network tab "Offline" mode for testing');const e=document.createElement("div");e.style.cssText="\n                            position: fixed; top: 10px; right: 10px; z-index: 10000;\n                            background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 4px;\n                            padding: 12px; font-family: 'Segoe UI', sans-serif; font-size: 12px;\n                            max-width: 300px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);\n                        ",e.innerHTML='\n                            <strong>⚠️ Offline Mode Setup Needed</strong><br>\n                            Visit <a href="/sw.js" target="_blank" style="color: #0078d4;">localhost:3000/sw.js</a> \n                            and accept the SSL certificate for offline functionality.\n                        ',document.body.appendChild(e),setTimeout(()=>e.remove(),1e4)}return null})}console.log("📱 Service Worker supported"),registerServiceWorker().then(e=>{e?console.log("🎉 Service Worker successfully registered for offline support"):(console.log("⚠️ Service Worker failed - using browser cache fallback"),implementBrowserCacheFallback())}),navigator.serviceWorker.addEventListener("controllerchange",()=>{console.log("🔄 Service Worker controller changed - add-in now cached for offline use")})}else console.warn("⚠️ Service Worker not supported in this environment");function checkOfficeJs(){return"undefined"!=typeof Office?(console.log("✅ Office.js is available"),console.log("📊 Office Host:",Office.context?.host?.name||"Unknown"),console.log("📊 Office Platform:",Office.context?.platform||"Unknown"),!0):(console.log("⏳ Waiting for Office.js..."),!1)}window.addEventListener("online",()=>{console.log("🟢 Network: ONLINE")}),window.addEventListener("offline",()=>{console.log("🔴 Network: OFFLINE - Add-in should work from cache")}),checkOfficeJs();const officeInterval=setInterval(()=>{checkOfficeJs()&&clearInterval(officeInterval)},500);setTimeout(()=>{clearInterval(officeInterval),"undefined"==typeof Office&&console.error("❌ Office.js failed to load after 10 seconds")},1e4)</script></body></html>
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sensitive Data Scanner - Commands</title>
+
+    <!-- Office JavaScript API will be provided by the host environment -->
+    <!-- No external script needed - Office.js is automatically available in add-in runtime -->
+<script defer src="polyfill.js"></script><script defer src="commands.js"></script></head>
+
+<body>
+    <!-- This page hosts the event-based activation functions -->
+    <div style="display: none;">
+        <h1>Sensitive Data Scanner - Event Handler</h1>
+        <p>This page hosts the event-based activation functions for the Sensitive Data Scanner add-in.</p>
+        <p>The functions defined here will be called automatically when users attempt to send emails or calendar invitations.</p>
+    </div>
+
+    <!-- Service Worker Registration & Debugging -->
+    <script>
+        console.log('🚀 Commands page loaded at:', new Date().toISOString());
+        console.log('🌐 Navigator online:', navigator.onLine);
+        console.log('📍 Current URL:', window.location.href);
+
+        // Register Service Worker for offline caching with SSL error handling
+        if ('serviceWorker' in navigator) {
+            console.log('📱 Service Worker supported');
+            
+            // First, try to register with current domain
+            function registerServiceWorker() {
+                // Use relative path for GitHub Pages
+                const swPath = './sw.js';
+                console.log('📝 Attempting to register SW at:', swPath);
+                console.log('📍 From GitHub Pages:', window.location.origin);
+                
+                return navigator.serviceWorker.register(swPath, { 
+                    scope: './',
+                    updateViaCache: 'none'  // Force fresh fetch of SW
+                })
+                .then((registration) => {
+                    console.log('✅ Service Worker registered successfully');
+                    console.log('📦 Scope:', registration.scope);
+                    console.log('📦 State:', registration.active?.state);
+                    console.log('📦 Installing state:', registration.installing?.state);
+                    console.log('📦 Waiting state:', registration.waiting?.state);
+                    
+                    // Force activation if waiting
+                    if (registration.waiting) {
+                        console.log('🔄 Activating waiting service worker');
+                        registration.waiting.postMessage({type: 'SKIP_WAITING'});
+                    }
+                    
+                    // Listen for state changes
+                    if (registration.installing) {
+                        registration.installing.addEventListener('statechange', (e) => {
+                            console.log('🔄 SW state changed to:', e.target.state);
+                        });
+                    }
+                    
+                    return registration;
+                })
+                .catch((error) => {
+                    console.error('❌ Service Worker registration failed:', error);
+                    console.error('❌ Error type:', error.constructor.name);
+                    console.error('❌ Error message:', error.message);
+                    
+                    // If SSL error, provide guidance
+                    if (error.message.includes('SSL') || error.message.includes('certificate')) {
+                        console.warn('⚠️ GitHub Pages SSL Certificate Issue Detected');
+                        console.warn('⚠️ This should not happen with GitHub Pages - check network connection');
+                        console.warn('⚠️ Use browser Developer Tools Network tab "Offline" mode for testing');
+                        
+                        // Show user-friendly message
+                        const warningDiv = document.createElement('div');
+                        warningDiv.style.cssText = `
+                            position: fixed; top: 10px; right: 10px; z-index: 10000;
+                            background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 4px;
+                            padding: 12px; font-family: 'Segoe UI', sans-serif; font-size: 12px;
+                            max-width: 300px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                        `;
+                        warningDiv.innerHTML = `
+                            <strong>⚠️ Offline Mode Setup Needed</strong><br>
+                            Visit <a href="/sw.js" target="_blank" style="color: #0078d4;">localhost:3000/sw.js</a> 
+                            and accept the SSL certificate for offline functionality.
+                        `;
+                        document.body.appendChild(warningDiv);
+                        
+                        // Auto-remove after 10 seconds
+                        setTimeout(() => warningDiv.remove(), 10000);
+                    }
+                    
+                    return null;
+                });
+            }
+            
+            // Try registration with fallback
+            registerServiceWorker().then((registration) => {
+                if (registration) {
+                    console.log('🎉 Service Worker successfully registered for offline support');
+                } else {
+                    console.log('⚠️ Service Worker failed - using browser cache fallback');
+                    implementBrowserCacheFallback();
+                }
+            });
+
+            // Listen for service worker controller changes
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                console.log('🔄 Service Worker controller changed - add-in now cached for offline use');
+            });
+        } else {
+            console.warn('⚠️ Service Worker not supported in this environment');
+        }
+
+        // Network status monitoring
+        window.addEventListener('online', () => { 
+            console.log('🟢 Network: ONLINE'); 
+        });
+        window.addEventListener('offline', () => { 
+            console.log('🔴 Network: OFFLINE - Add-in should work from cache'); 
+        });
+
+        // Office.js availability check
+        function checkOfficeJs() {
+            if (typeof Office !== 'undefined') {
+                console.log('✅ Office.js is available');
+                console.log('📊 Office Host:', Office.context?.host?.name || 'Unknown');
+                console.log('📊 Office Platform:', Office.context?.platform || 'Unknown');
+                return true;
+            } else {
+                console.log('⏳ Waiting for Office.js...');
+                return false;
+            }
+        }
+
+        // Initial check
+        checkOfficeJs();
+        
+        // Periodic check for Office.js (with timeout)
+        const officeInterval = setInterval(() => {
+            if (checkOfficeJs()) {
+                clearInterval(officeInterval);
+            }
+        }, 500);
+
+        // Stop checking after 10 seconds
+        setTimeout(() => {
+            clearInterval(officeInterval);
+            if (typeof Office === 'undefined') {
+                console.error('❌ Office.js failed to load after 10 seconds');
+            }
+        }, 10000);
+    </script>
+</body>
+
+</html>
