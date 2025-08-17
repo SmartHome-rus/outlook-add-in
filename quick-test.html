@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Quick Environment Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .outlook { background: #d4edda; color: #155724; padding: 20px; border-radius: 8px; }
+        .browser { background: #f8d7da; color: #721c24; padding: 20px; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Environment Test</h1>
+    <div id="result"></div>
+    
+    <script>
+        const result = document.getElementById('result');
+        
+        if (typeof Office !== 'undefined') {
+            result.innerHTML = `
+                <div class="outlook">
+                    <h2>✅ YOU ARE IN OUTLOOK!</h2>
+                    <p>Office.js is available. Your add-in should work here.</p>
+                    <p>Current host: ${Office.context?.host?.name || 'Unknown'}</p>
+                </div>
+            `;
+        } else {
+            result.innerHTML = `
+                <div class="browser">
+                    <h2>❌ YOU ARE IN A REGULAR BROWSER</h2>
+                    <p>Office.js is NOT available. This is why you see timeout errors.</p>
+                    <p><strong>To test properly:</strong></p>
+                    <ol>
+                        <li>Sideload your manifest.xml in Outlook</li>
+                        <li>Compose a new email</li>
+                        <li>Look for your add-in in the ribbon/taskpane</li>
+                        <li>Test the keyword blocking there</li>
+                    </ol>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
