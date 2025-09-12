@@ -1,0 +1,16 @@
+<!doctype html><html lang="en"><head><meta charset="UTF-8"/><title>Keyword Warning</title><meta name="viewport" content="width=device-width,initial-scale=1"/><style>body { font-family: Segoe UI, Arial, sans-serif; margin: 0; padding: 1rem; }
+    .container { max-width: 320px; }
+    h2 { font-size: 1.1rem; margin-top: 0; }
+    button { background: #0078d4; color: #fff; border: none; padding: 0.5rem 1rem; cursor: pointer; border-radius: 4px; }
+    button:hover { background: #106ebe; }</style><script defer="defer" src="taskpane.js"></script></head><body><div class="container"><h2>Keyword Detected</h2><p id="message">I found test</p><button id="sendAnyway">Send anyway</button></div><script src="taskpane.js"></script><script>// Attach dialog-specific handler once Office initializes and shared bundle loaded
+    (function attach(){
+      if (window['AddinDialog']) return; // Already wired by shared code
+      if (typeof Office === 'undefined' || !Office.context) {
+        setTimeout(attach, 50);
+        return;
+      }
+      // Fallback minimal dialog wiring if shared script didn't run
+      document.getElementById('sendAnyway').onclick = function(){
+        Office.context.ui.messageParent(JSON.stringify({ action: 'proceedSend' }));
+      };
+    })();</script></body></html>
