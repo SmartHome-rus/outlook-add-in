@@ -1,0 +1,274 @@
+<!doctype html><html><head><meta charset="UTF-8"/><meta http-equiv="X-UA-Compatible" content="IE=Edge"/><meta name="viewport" content="width=device-width,initial-scale=1"><title>Test Interceptor</title><link rel="stylesheet" href="https://static2.sharepointonline.com/files/fabric/office-ui-fabric-core/9.6.1/css/fabric.min.css"><style>body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f3f2f1;
+        }
+        
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 24px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .warning-icon {
+            font-size: 48px;
+            color: #ff4444;
+            margin-bottom: 16px;
+        }
+        
+        .title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #323130;
+            margin-bottom: 8px;
+        }
+        
+        .message {
+            font-size: 14px;
+            color: #605e5c;
+            line-height: 1.4;
+            margin-bottom: 24px;
+            text-align: center;
+        }
+        
+        .button-container {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+        
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            min-width: 80px;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary {
+            background-color: #0078d4;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #106ebe;
+        }
+        
+        .btn-secondary {
+            background-color: #f3f2f1;
+            color: #323130;
+            border: 1px solid #8a8886;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #edebe9;
+        }
+        
+        .status-indicator {
+            margin-top: 16px;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            text-align: center;
+        }
+        
+        .status-online {
+            background-color: #dff6dd;
+            color: #107c10;
+        }
+        
+        .status-offline {
+            background-color: #fed9cc;
+            color: #d13438;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        /* Taskpane specific styles */
+        .taskpane-content {
+            padding: 16px;
+        }
+        
+        .feature-list {
+            list-style: none;
+            padding: 0;
+            margin: 16px 0;
+        }
+        
+        .feature-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #edebe9;
+            display: flex;
+            align-items: center;
+        }
+        
+        .feature-list li:before {
+            content: '✓';
+            color: #107c10;
+            font-weight: bold;
+            margin-right: 8px;
+        }</style><script src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script><script defer="defer" src="/outlook-add-in/taskpane.36ab2667de3a260a50ce.js"></script></head><body><div class="container"><div id="confirmation-dialog" class="hidden"><div class="header"><div class="warning-icon">⚠️</div><div class="title">Test Content Found</div></div><div class="message">I found "test" in your email content. This might be a test email that shouldn't be sent to real recipients.</div><div class="button-container"><button class="btn btn-secondary" onclick="cancelSend()">Cancel</button> <button class="btn btn-primary" onclick="sendAnyway()">Send anyway</button></div><div id="network-status" class="status-indicator"></div></div><div id="taskpane-content" class="taskpane-content"><div class="header"><div class="title">Test Interceptor</div></div><div class="message">This add-in helps prevent accidental sending of test emails by monitoring your email content.</div><ul class="feature-list"><li>Monitors emails for "test" content</li><li>Shows confirmation before sending</li><li>Works online and offline</li><li>Compatible with all Outlook versions</li></ul><div class="button-container"><button class="btn btn-primary" onclick="checkCurrentEmail()">Check Current Email</button></div><div id="taskpane-status" class="status-indicator"></div></div></div><script>// Initialize the add-in
+        Office.onReady((info) => {
+            if (info.host === Office.HostType.Outlook) {
+                initializeUI();
+                updateNetworkStatus();
+                
+                // Set up network status monitoring
+                window.addEventListener('online', updateNetworkStatus);
+                window.addEventListener('offline', updateNetworkStatus);
+            }
+        });
+        
+        /**
+         * Initialize the UI based on URL parameters
+         */
+        function initializeUI() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const mode = urlParams.get('mode');
+            
+            if (mode === 'confirm') {
+                // Show confirmation dialog
+                document.getElementById('confirmation-dialog').classList.remove('hidden');
+                document.getElementById('taskpane-content').classList.add('hidden');
+            } else {
+                // Show regular taskpane
+                document.getElementById('confirmation-dialog').classList.add('hidden');
+                document.getElementById('taskpane-content').classList.remove('hidden');
+            }
+        }
+        
+        /**
+         * Update network status indicator
+         */
+        function updateNetworkStatus() {
+            const isOnline = navigator.onLine;
+            const statusElement = document.getElementById('network-status') || document.getElementById('taskpane-status');
+            
+            if (statusElement) {
+                statusElement.className = `status-indicator ${isOnline ? 'status-online' : 'status-offline'}`;
+                statusElement.textContent = `Status: ${isOnline ? 'Online' : 'Offline'}`;
+            }
+        }
+        
+        /**
+         * Handle "Send anyway" button click
+         */
+        function sendAnyway() {
+            console.log('User chose to send anyway');
+            
+            // Send message back to parent dialog
+            if (Office.context.ui && Office.context.ui.messageParent) {
+                Office.context.ui.messageParent(JSON.stringify({ action: 'send' }));
+            } else {
+                // Fallback for testing
+                window.parent.postMessage(JSON.stringify({ action: 'send' }), '*');
+            }
+        }
+        
+        /**
+         * Handle "Cancel" button click
+         */
+        function cancelSend() {
+            console.log('User chose to cancel send');
+            
+            // Send message back to parent dialog
+            if (Office.context.ui && Office.context.ui.messageParent) {
+                Office.context.ui.messageParent(JSON.stringify({ action: 'cancel' }));
+            } else {
+                // Fallback for testing
+                window.parent.postMessage(JSON.stringify({ action: 'cancel' }), '*');
+            }
+        }
+        
+        /**
+         * Check current email content manually
+         */
+        function checkCurrentEmail() {
+            const item = Office.context.mailbox.item;
+            
+            if (!item) {
+                showStatus('No email item found', false);
+                return;
+            }
+            
+            // Get the email body content
+            item.body.getAsync(Office.CoercionType.Text, (result) => {
+                if (result.status === Office.AsyncResultStatus.Succeeded) {
+                    const emailBody = result.value.toLowerCase();
+                    
+                    if (emailBody.includes('test')) {
+                        showStatus('⚠️ Warning: Email contains "test" content', false);
+                        
+                        // Also show notification in the email
+                        item.notificationMessages.addAsync(
+                            'manual-check-warning',
+                            {
+                                type: Office.MailboxEnums.ItemNotificationMessageType.InformationalMessage,
+                                message: 'Warning: Email contains "test" content - review before sending',
+                                icon: 'Icon.16x16',
+                                persistent: true
+                            }
+                        );
+                    } else {
+                        showStatus('✅ Email content looks good - no "test" found', true);
+                    }
+                } else {
+                    showStatus('Error checking email content', false);
+                    console.error('Failed to get email body:', result.error);
+                }
+            });
+        }
+        
+        /**
+         * Show status message
+         */
+        function showStatus(message, isSuccess) {
+            const statusElement = document.getElementById('taskpane-status');
+            
+            if (statusElement) {
+                statusElement.textContent = message;
+                statusElement.className = `status-indicator ${isSuccess ? 'status-online' : 'status-offline'}`;
+                
+                // Clear status after 5 seconds
+                setTimeout(() => {
+                    updateNetworkStatus();
+                }, 5000);
+            }
+        }
+        
+        /**
+         * XML validation utility
+         */
+        function validateXMLContent(xmlString) {
+            try {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(xmlString, 'application/xml');
+                
+                // Check for parsing errors
+                const parseError = doc.getElementsByTagName('parsererror');
+                if (parseError.length > 0) {
+                    console.error('XML Parsing Error:', parseError[0].textContent);
+                    return false;
+                }
+                
+                console.log('XML validation successful');
+                return true;
+            } catch (error) {
+                console.error('XML validation failed:', error);
+                return false;
+            }
+        }</script></body></html>
