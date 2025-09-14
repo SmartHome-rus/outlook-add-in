@@ -83,7 +83,7 @@ function showTestWordDialog(event) {
     event.completed({
         allowEvent: false,
         options: {
-            url: "https://your-github-username.github.io/your-repo-name/src/dialog/dialog.html",
+            url: "https://smarthome-rus.github.io/outlook-add-in/src/dialog/dialog.html",
             width: 35,
             height: 20
         }
