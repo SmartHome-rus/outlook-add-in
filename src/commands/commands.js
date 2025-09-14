@@ -1,185 +1,219 @@
-/**
- * Test Word Checker Commands
- * Event-based activation for OnMessageSend to scan for the word "test"
+/*
+ * Outlook Smart Alert Add-in
+ * 
+ * This add-in uses Smart Alerts to warn users when sending emails containing the word "test".
+ * It implements a two-phase send process:
+ * 1. Initial send attempt: Block and show notification if "test" is found
+ * 2. Second send attempt: Allow send after user confirms via "Send Anyway" button
  */
 
-// Global variable to store the event object for dialog communication
-let currentSendEvent = null;
+// Global flag key for session data
+const SEND_APPROVED_KEY = "isSendApproved";
+const NOTIFICATION_KEY = "test-alert";
 
 /**
- * Office.js initialization
+ * Main handler for OnMessageSend event
+ * Implements Smart Alerts workflow for detecting "test" keyword
  */
-Office.onReady(() => {
-    console.log("Test Word Checker commands initialized");
-});
-
-/**
- * Event handler for OnMessageSend
- * This function is called when the user attempts to send an email
- * @param {Office.AddinCommands.Event} event - The event object
- */
-function onMessageSendHandler(event) {
-    console.log("OnMessageSend event triggered");
-    
-    // Store the event for later use in dialog communication
-    currentSendEvent = event;
-    
-    // Critical: Check if the user is offline
-    // If offline, skip all add-in logic and allow the email to proceed to Outbox
-    if (!navigator.onLine) {
-        console.log("User is offline - skipping add-in logic and allowing send");
-        event.completed({ allowEvent: true });
-        return;
-    }
-    
+async function onMessageSendHandler(event) {
     try {
-        // Get the email body in plain text format
-        Office.context.mailbox.item.body.getAsync(
-            Office.CoercionType.Text,
-            { asyncContext: event },
-            (result) => {
-                if (result.status === Office.AsyncResultStatus.Succeeded) {
-                    const emailBody = result.value;
-                    console.log("Email body retrieved successfully");
-                    
-                    // Search for the word "test" (case-insensitive, whole word only)
-                    const testWordRegex = /\btest\b/i;
-                    const containsTestWord = testWordRegex.test(emailBody);
-                    
-                    if (containsTestWord) {
-                        console.log("Found 'test' in email body - showing confirmation dialog");
-                        
-                        // Block the send and show confirmation dialog
-                        showTestWordDialog(event);
-                    } else {
-                        console.log("No 'test' word found - allowing send");
-                        
-                        // Allow the email to be sent
-                        event.completed({ allowEvent: true });
-                    }
-                } else {
-                    console.error("Failed to get email body:", result.error);
-                    
-                    // If we can't read the body, allow the send to proceed
-                    // (fail-safe approach to avoid blocking legitimate emails)
-                    event.completed({ allowEvent: true });
-                }
-            }
-        );
+        console.log("OnMessageSend event triggered");
+        
+        // PHASE 1: Check if this is a second send attempt (user already approved)
+        // If user clicked "Send Anyway", we set a flag in session data
+        const item = Office.context.mailbox.item;
+        
+        // Check for approval flag from previous interaction
+        const sendApproved = await checkSendApproval();
+        if (sendApproved) {
+            console.log("Send already approved by user, allowing email to send");
+            // Clear the approval flag and allow send
+            await clearSendApproval();
+            event.completed({ allowEvent: true });
+            return;
+        }
+
+        // PHASE 2: Offline check - if offline, skip all logic and allow send
+        if (!navigator.onLine) {
+            console.log("User is offline, allowing email to go to Outbox");
+            event.completed({ allowEvent: true });
+            return;
+        }
+
+        // PHASE 3: Get email body and scan for "test" keyword
+        const bodyText = await getEmailBodyText();
+        const containsTest = /\btest\b/i.test(bodyText);
+
+        if (!containsTest) {
+            console.log("No 'test' keyword found, allowing send");
+            event.completed({ allowEvent: true });
+            return;
+        }
+
+        // PHASE 4: "test" keyword found - show Smart Alert and block send
+        console.log("'test' keyword detected, showing Smart Alert");
+        await showTestWarningNotification();
+        
+        // Block the send - user must click "Send Anyway" to proceed
+        event.completed({ allowEvent: false });
+
     } catch (error) {
         console.error("Error in onMessageSendHandler:", error);
-        
-        // If any unexpected error occurs, allow the send to proceed
+        // On error, allow send to avoid blocking legitimate emails
         event.completed({ allowEvent: true });
     }
 }
 
 /**
- * Shows the confirmation dialog when "test" is found in the email
- * @param {Office.AddinCommands.Event} event - The send event
+ * Action handler for "Send Anyway" button click
+ * This function is called when user clicks the Smart Alert action button
  */
-function showTestWordDialog(event) {
-    // Block the send and show dialog
-    event.completed({
-        allowEvent: false,
-        options: {
-            url: "https://smarthome-rus.github.io/outlook-add-in/src/dialog/dialog.html",
-            width: 35,
-            height: 20
-        }
+async function sendAnywayAction(event) {
+    try {
+        console.log("Send Anyway button clicked");
+        
+        // Set approval flag in session data for next send attempt
+        await setSendApproval();
+        
+        // Remove the notification bar
+        await removeTestWarningNotification();
+        
+        console.log("Notification removed, user can now send email");
+        
+        // Complete the action
+        event.completed();
+        
+    } catch (error) {
+        console.error("Error in sendAnywayAction:", error);
+        event.completed();
+    }
+}
+
+/**
+ * Get the email body as plain text
+ */
+async function getEmailBodyText() {
+    return new Promise((resolve, reject) => {
+        const item = Office.context.mailbox.item;
+        
+        item.body.getAsync(Office.CoercionType.Text, (result) => {
+            if (result.status === Office.AsyncResultStatus.Succeeded) {
+                resolve(result.value || "");
+            } else {
+                reject(new Error("Failed to get email body: " + result.error.message));
+            }
+        });
     });
 }
 
 /**
- * Handler for messages received from the dialog
- * This function is called when the user makes a choice in the dialog
- * @param {object} arg - Message from the dialog
+ * Show Smart Alert notification warning about "test" keyword
  */
-function handleDialogMessage(arg) {
-    console.log("Received message from dialog:", arg.message);
-    
-    if (!currentSendEvent) {
-        console.error("No current send event available");
-        return;
-    }
-    
-    try {
-        if (arg.message === "send") {
-            console.log("User chose to send anyway");
-            
-            // Allow the email to be sent
-            currentSendEvent.completed({ allowEvent: true });
-        } else if (arg.message === "discard") {
-            console.log("User chose to discard and edit");
-            
-            // Cancel the send (email remains in compose window for editing)
-            currentSendEvent.completed({ allowEvent: false });
-        } else {
-            console.warn("Unknown dialog message:", arg.message);
-            
-            // Default to canceling the send for safety
-            currentSendEvent.completed({ allowEvent: false });
-        }
-    } catch (error) {
-        console.error("Error handling dialog message:", error);
+async function showTestWarningNotification() {
+    return new Promise((resolve, reject) => {
+        const item = Office.context.mailbox.item;
         
-        // If there's an error, cancel the send for safety
-        currentSendEvent.completed({ allowEvent: false });
-    } finally {
-        // Clean up the event reference
-        currentSendEvent = null;
-    }
-}
-
-/**
- * Initialize dialog message handling
- * This sets up the communication channel with the dialog
- */
-function initializeDialogHandling() {
-    try {
-        // Register the dialog message handler
-        Office.context.ui.addHandlerAsync(
-            Office.EventType.DialogMessageReceived,
-            handleDialogMessage,
-            (result) => {
-                if (result.status === Office.AsyncResultStatus.Succeeded) {
-                    console.log("Dialog message handler registered successfully");
-                } else {
-                    console.error("Failed to register dialog message handler:", result.error);
+        const notification = {
+            type: Office.MailboxEnums.ItemNotificationMessageType.InformationalMessage,
+            message: "This email contains the word 'test'. Are you sure you want to send it?",
+            icon: "Icon.80x80",
+            persistent: false,
+            actions: [
+                {
+                    actionType: Office.MailboxEnums.ActionType.ShowTaskpane,
+                    actionText: "Send Anyway",
+                    commandId: "sendAnywayAction"
                 }
-            }
-        );
-    } catch (error) {
-        console.error("Error initializing dialog handling:", error);
-    }
-}
+            ]
+        };
 
-// Initialize dialog handling when Office.js is ready
-Office.onReady(() => {
-    initializeDialogHandling();
-});
+        item.notificationMessages.addAsync(NOTIFICATION_KEY, notification, (result) => {
+            if (result.status === Office.AsyncResultStatus.Succeeded) {
+                console.log("Smart Alert notification added successfully");
+                resolve();
+            } else {
+                reject(new Error("Failed to add notification: " + result.error.message));
+            }
+        });
+    });
+}
 
 /**
- * Alternative approach for dialog communication (if the above doesn't work)
- * This function can be called directly from the dialog
+ * Remove the test warning notification
  */
-function receiveDialogMessage(message) {
-    console.log("Direct dialog message received:", message);
-    handleDialogMessage({ message: message });
+async function removeTestWarningNotification() {
+    return new Promise((resolve, reject) => {
+        const item = Office.context.mailbox.item;
+        
+        item.notificationMessages.removeAsync(NOTIFICATION_KEY, (result) => {
+            if (result.status === Office.AsyncResultStatus.Succeeded) {
+                console.log("Notification removed successfully");
+                resolve();
+            } else {
+                console.warn("Failed to remove notification:", result.error.message);
+                // Don't reject - this is not critical
+                resolve();
+            }
+        });
+    });
 }
 
-// Make functions globally available for Office Add-ins
-if (typeof window !== "undefined") {
-    window.onMessageSendHandler = onMessageSendHandler;
-    window.handleDialogMessage = handleDialogMessage;
-    window.receiveDialogMessage = receiveDialogMessage;
+/**
+ * Set the send approval flag in session data
+ */
+async function setSendApproval() {
+    return new Promise((resolve, reject) => {
+        const item = Office.context.mailbox.item;
+        
+        item.sessionData.setAsync(SEND_APPROVED_KEY, "true", (result) => {
+            if (result.status === Office.AsyncResultStatus.Succeeded) {
+                console.log("Send approval flag set");
+                resolve();
+            } else {
+                reject(new Error("Failed to set approval flag: " + result.error.message));
+            }
+        });
+    });
 }
 
-// For Node.js environments (if needed)
-if (typeof module !== "undefined" && module.exports) {
-    module.exports = {
-        onMessageSendHandler,
-        handleDialogMessage,
-        receiveDialogMessage
-    };
+/**
+ * Check if send has been approved (flag exists in session data)
+ */
+async function checkSendApproval() {
+    return new Promise((resolve) => {
+        const item = Office.context.mailbox.item;
+        
+        item.sessionData.getAsync(SEND_APPROVED_KEY, (result) => {
+            if (result.status === Office.AsyncResultStatus.Succeeded && result.value === "true") {
+                resolve(true);
+            } else {
+                resolve(false);
+            }
+        });
+    });
 }
+
+/**
+ * Clear the send approval flag from session data
+ */
+async function clearSendApproval() {
+    return new Promise((resolve) => {
+        const item = Office.context.mailbox.item;
+        
+        item.sessionData.removeAsync(SEND_APPROVED_KEY, (result) => {
+            // Always resolve - clearing is not critical for functionality
+            resolve();
+        });
+    });
+}
+
+// Associate the action command with its handler function
+// This must be done at the global level when the script loads
+Office.onReady(() => {
+    console.log("Office.js is ready, associating action handlers");
+    
+    // Associate the "Send Anyway" button action with its handler
+    Office.actions.associate("sendAnywayAction", sendAnywayAction);
+    
+    console.log("Smart Alert add-in loaded successfully");
+});

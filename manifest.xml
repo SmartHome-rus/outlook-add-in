@@ -1,39 +1,31 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <OfficeApp xmlns="http://schemas.microsoft.com/office/appforoffice/1.1"
-           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-           xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
-           xmlns:mailappor="http://schemas.microsoft.com/office/mailappversionoverrides"
-           xsi:type="MailApp">
-
-  <!-- Basic Add-in Information -->
-  <Id>12345678-1234-1234-1234-123456789012</Id>
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
+  xmlns:mailappor="http://schemas.microsoft.com/office/mailappversionoverrides/1.0"
+  xsi:type="MailApp">
+  
+  <!-- Basic add-in information -->
+  <Id>12345678-1234-5678-9abc-123456789012</Id>
   <Version>1.0.0.0</Version>
-  <ProviderName>Your Organization</ProviderName>
+  <ProviderName>Smart Alert Solutions</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
-  <DisplayName DefaultValue="Test Word Checker" />
-  <Description DefaultValue="Scans emails for the word 'test' and asks for confirmation before sending." />
+  <DisplayName DefaultValue="Outlook Smart Alert" />
+  <Description DefaultValue="Outlook add-in that uses Smart Alerts to warn about test emails" />
   <IconUrl DefaultValue="https://smarthome-rus.github.io/outlook-add-in/assets/icon-32.png" />
-  <HighResolutionIconUrl DefaultValue="https://smarthome-rus.github.io/outlook-add-in/assets/icon-64.png" />
-  <SupportUrl DefaultValue="https://smarthome-rus.github.io/outlook-add-in/support" />
+  <HighResolutionIconUrl DefaultValue="https://smarthome-rus.github.io/outlook-add-in/assets/icon-80.png" />
+  <SupportUrl DefaultValue="https://smarthome-rus.github.io/outlook-add-in/" />
 
-  <!-- App Domains (Required for dialog hosting) -->
-  <AppDomains>
-    <AppDomain>https://smarthome-rus.github.io</AppDomain>
-  </AppDomains>
-
-  <!-- Hosts supported by this add-in -->
+  <!-- Outlook-specific app definition -->
   <Hosts>
     <Host Name="Mailbox" />
   </Hosts>
-
-  <!-- Required permissions -->
   <Requirements>
     <Sets>
-      <Set Name="Mailbox" MinVersion="1.10" />
+      <!-- Mailbox 1.12 or higher required for Smart Alerts -->
+      <Set Name="Mailbox" MinVersion="1.12"/>
     </Sets>
   </Requirements>
-
-  <!-- Form Settings (Required by schema even for event-based add-ins) -->
   <FormSettings>
     <Form xsi:type="ItemRead">
       <DesktopSettings>
@@ -43,72 +35,52 @@
     </Form>
   </FormSettings>
 
-  <!-- Permissions -->
+  <!-- Permissions for reading and writing items -->
   <Permissions>ReadWriteItem</Permissions>
 
-  <!-- Rule for when the add-in should be available -->
+  <!-- Rule required for VersionOverrides -->
   <Rule xsi:type="RuleCollection" Mode="Or">
     <Rule xsi:type="ItemIs" ItemType="Message" FormType="Edit" />
   </Rule>
 
-  <!-- Add-in Commands and Event-Based Activation -->
+  <!-- Version overrides for modern Outlook features -->
   <VersionOverrides xmlns="http://schemas.microsoft.com/office/mailappversionoverrides" xsi:type="VersionOverridesV1_0">
-    <VersionOverrides xmlns="http://schemas.microsoft.com/office/mailappversionoverrides/1.1" xsi:type="VersionOverridesV1_1">
-    
-    <!-- Requirements for event-based activation -->
     <Requirements>
-      <bt:Sets DefaultMinVersion="1.10">
+      <bt:Sets DefaultMinVersion="1.12">
         <bt:Set Name="Mailbox" />
       </bt:Sets>
     </Requirements>
-    
-    <!-- Hosts -->
     <Hosts>
       <Host xsi:type="MailHost">
-        
-        <!-- Desktop form factor -->
+        <!-- Function file for commands -->
         <DesktopFormFactor>
-          <!-- Function file for event handlers -->
+          <!-- Required for Smart Alerts functionality -->
+          <SupportsSharedFolders>true</SupportsSharedFolders>
           <FunctionFile resid="Commands.Url" />
           
-          <!-- Extension Points -->
+          <!-- LaunchEvent for OnMessageSend -->
           <ExtensionPoint xsi:type="LaunchEvent">
             <LaunchEvents>
-              <!-- OnMessageSend event handler -->
               <LaunchEvent Type="OnMessageSend" FunctionName="onMessageSendHandler" />
             </LaunchEvents>
-            <!-- Source location is required by schema for ExtensionPoint -->
+            <!-- Source location for event handlers -->
             <SourceLocation resid="Commands.Url" />
           </ExtensionPoint>
-          
         </DesktopFormFactor>
-        
       </Host>
     </Hosts>
 
-    <!-- Resources -->
+    <!-- Resources section with URLs -->
     <Resources>
-      <bt:Images>
-  <bt:Image id="Icon.16x16" DefaultValue="https://smarthome-rus.github.io/outlook-add-in/assets/icon-16.png" />
-  <bt:Image id="Icon.32x32" DefaultValue="https://smarthome-rus.github.io/outlook-add-in/assets/icon-32.png" />
-  <bt:Image id="Icon.80x80" DefaultValue="https://smarthome-rus.github.io/outlook-add-in/assets/icon-80.png" />
-      </bt:Images>
-      
       <bt:Urls>
         <bt:Url id="Commands.Url" DefaultValue="https://smarthome-rus.github.io/outlook-add-in/src/commands/commands.html" />
       </bt:Urls>
-      
       <bt:ShortStrings>
-        <bt:String id="GroupLabel" DefaultValue="Test Word Checker" />
+        <bt:String id="GroupLabel" DefaultValue="Smart Alert" />
       </bt:ShortStrings>
-      
       <bt:LongStrings>
-        <bt:String id="TaskpaneDescription" DefaultValue="Test Word Checker for email validation" />
+        <bt:String id="Description" DefaultValue="Smart Alert for Outlook messages" />
       </bt:LongStrings>
-      
     </Resources>
-    
-    </VersionOverrides>
   </VersionOverrides>
-  
 </OfficeApp>
