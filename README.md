@@ -1,78 +1,47 @@
-# Outlook Smart Alert Add-in
+# Smart Alert Send Checker Outlook Add-in
 
-A modern Outlook add-in that uses Smart Alerts to warn users when sending emails containing the word "test".
+This add-in intercepts the send event (OnMessageSend) in Outlook message compose and checks if the subject or body contains the word `test` (case-insensitive). If found, it prompts the user to either edit the message or send anyway.
 
-## Features
+## Files
+- `manifest.xml` – Office Add-in manifest (host via raw URL or local for sideload)
+- `function-file.html` – UI-less page hosting logic
+- `function-file.js` – Implementation for OnMessageSend logic
 
-- **Smart Alerts Integration**: Uses Office.js Smart Alerts for non-intrusive notifications
-- **OnMessageSend Event**: Triggers automatically when user attempts to send an email
-- **Keyword Detection**: Scans email body for the word "test" (case-insensitive, whole word)
-- **Cross-Platform**: Works on Outlook Classic (Windows), New Outlook, and Outlook on the web
-- **Offline Support**: Gracefully handles offline scenarios by allowing emails to go to Outbox
-- **Two-Phase Send Process**: 
-  1. Block initial send and show notification if "test" is found
-  2. Allow send after user confirmation via "Send Anyway" button
+## Hosting via GitHub Pages
+1. Create (if not existing) a GitHub repository named `outlook-add-in` under the `smarthome-rus` account.
+2. Place the three files (`manifest.xml`, `function-file.html`, `function-file.js`) and any icons under `assets/` if desired.
+3. Enable GitHub Pages (Settings -> Pages) with branch `main` (or `master`) and root directory.
+4. The files will be available at:
+   - `https://smarthome-rus.github.io/outlook-add-in/manifest.xml`
+   - `https://smarthome-rus.github.io/outlook-add-in/function-file.html`
+   - `https://smarthome-rus.github.io/outlook-add-in/function-file.js`
 
-## File Structure
+Update URLs in `manifest.xml` if your path differs.
 
-```
-outlook_smart_alert/
-├── manifest.xml                    # Add-in manifest with Smart Alerts configuration
-├── src/
-│   └── commands/
-│       ├── commands.html           # HTML host page for Office.js
-│       └── commands.js             # Core add-in logic
-└── README.md                       # This file
-```
+## Sideload in Outlook on the Web (OWA)
+1. Go to Outlook on the web.
+2. Open a new message compose window.
+3. Select the gear icon -> "Manage add-ins" or "View all Outlook settings" -> Mail -> Customize actions -> Add-ins.
+4. Choose "Add a custom add-in" -> "Add from file" and upload `manifest.xml` or use "Add from URL" and enter the GitHub Pages manifest URL.
+5. Restart compose to ensure event handler loads.
 
-## Installation
+## Behavior
+- When you click Send:
+  - The add-in retrieves the subject and plain text body.
+  - If the word boundary match for `test` exists, a confirmation dialog (native `confirm`) appears.
+  - Choosing OK = Send Anyway (allowEvent true)
+  - Choosing Cancel = Edit Message (allowEvent false, returns to draft)
 
-1. Host these files on a web server (configured for GitHub Pages at `https://smarthome-rus.github.io/outlook-add-in/`)
-2. Sideload the `manifest.xml` file in Outlook
-3. The add-in will automatically activate for OnMessageSend events
+## Notes / Limitations
+- A native Smart Alert with custom button labels would require richer UI surfaces not available in a pure UI-less function runtime; this implementation uses `confirm()` for two-button interaction while leveraging the event-based send interception.
+- If APIs fail to load, the send is allowed to avoid blocking user flow.
 
-## Technical Requirements
+## Logging
+Open the browser developer tools (in OWA) or use Script Lab / Edge DevTools for Outlook (desktop preview) to see `console.log` output.
 
-- **Mailbox API Version**: 1.12 or higher (required for Smart Alerts)
-- **Permissions**: ReadWriteItem
-- **Supported Platforms**: 
-  - Outlook Classic (Windows)
-  - New Outlook (Windows)
-  - Outlook on the Web
+## Future Enhancements
+- Replace `confirm()` with Smart Alerts extended button model if/when exposed for customization.
+- Add localization resources.
 
-## How It Works
-
-### Smart Alerts Flow
-
-1. **Send Attempt**: User clicks Send button
-2. **Event Trigger**: OnMessageSend event fires
-3. **State Check**: Check if send was already approved from previous attempt
-4. **Offline Check**: If offline, allow send to Outbox
-5. **Content Scan**: Extract email body and search for "test" keyword using regex `/\btest\b/i`
-6. **Decision**:
-   - **No "test" found**: Allow send immediately
-   - **"test" found**: Show Smart Alert notification and block send
-7. **User Interaction**: Smart Alert displays with "Send Anyway" button
-8. **Approval**: User clicks "Send Anyway", setting approval flag
-9. **Second Send**: User clicks Send again, approval flag allows email to proceed
-
-### Key Technical Components
-
-- **State Management**: Uses `Office.context.mailbox.item.sessionData` to track user approval
-- **Smart Alerts**: Uses `item.notificationMessages.addAsync()` with action buttons
-- **Action Association**: `Office.actions.associate()` connects button clicks to handler functions
-- **Async/Await**: Modern JavaScript patterns for clean, readable code
-
-## Configuration
-
-All URLs in the manifest point to GitHub Pages:
-- Base URL: `https://smarthome-rus.github.io/outlook-add-in/`
-- Function File: `/src/commands/commands.html`
-- Commands Script: `/src/commands/commands.js`
-
-## Development Notes
-
-- The `<SupportsSharedFolders>true</SupportsSharedFolders>` tag is required in the manifest for Smart Alerts functionality
-- Error handling ensures legitimate emails are never permanently blocked
-- Console logging is included for debugging purposes
-- Session data automatically clears when compose window is closed
+## Validation
+Ensure the requirement set Mailbox 1.13+ is available in your environment (new Outlook / OWA modern experience).
